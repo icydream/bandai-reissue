@@ -1,5 +1,5 @@
 <script setup>
-import { ref, h, onMounted } from 'vue';
+import { ref, h, watch } from 'vue';
 import { NDataTable, NSpace, NImage } from 'naive-ui';
 import { useRoute } from 'vue-router';
 import { useParamStore } from '@/stores/param';
@@ -69,39 +69,43 @@ const handlePageChange = page => {
     });
 }
 
-onMounted(async () => {
-    loading.value = true;
+watch(
+    [
+        () => route.params.period,
+        () => route.query.category
+    ],
+    async ([period, category]) => {
+        loading.value = true;
 
-    const category = route.query.category;
-    const jsonData = await import(`@/assets/data/${route.params.period}.json`);
+        const jsonData = await import(`@/assets/data/${period}.json`);
 
-    paramStroe.period = route.params.period;
-    data.value = jsonData.default.map(data => {
-        const result = categoryData.find(c => data.title.indexOf(c.key) !== -1);
-        let category = '-';
+        paramStroe.period = period;
+        data.value = jsonData.default.map(data => {
+            const result = categoryData.find(c => data.title.indexOf(c.key) !== -1);
+            let category = '-';
 
-        if(!!result) {
-            category = result.category;
-        }
+            if(!!result) {
+                category = result.category;
+            }
 
-        data.category = category;
+            data.category = category;
 
-        return data;
-    })
-    .filter(data => {
-        if(!!category) {
-            return data.category === category;
-        }
+            return data;
+        })
+        .filter(data => {
+            if(!!category) {
+                return data.category === category;
+            }
 
-        return true;
-    });
+            return true;
+        });
 
-    pagination.value.itemCount = data.value.length;
-    handlePageChange(1);
-    loading.value = false;
-});
-
-
+        pagination.value.itemCount = data.value.length;
+        handlePageChange(1);
+        loading.value = false;
+    },
+    { immediate: true }
+);
 </script>
 <template>
     <n-space item-style="width: 100%;" vertical>

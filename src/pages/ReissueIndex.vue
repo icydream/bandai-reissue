@@ -21,14 +21,14 @@ watch(
 </script>
 <template>
     <n-space>
-        <a :href="period">All</a>|
+        |<router-link :to="{ name: 'schedule', params: { period } }">All</router-link>|
         <template
             v-for="c in category"
             :key="c.key"
         >
-            <a :href="`${period}?category=${c.key}`">{{ c.category }}</a>|
+            <router-link :to="{ name: 'schedule', params: { period }, query: { category: c.key } }">{{ c.category }}</router-link>|
         </template>
-        <a :href="`${period}?category=-`">Other</a>|
+        <router-link :to="{ name: 'schedule', params: { period }, query: { category: '-' } }">Other</router-link>|
     </n-space>
     <router-view />
 </template>
