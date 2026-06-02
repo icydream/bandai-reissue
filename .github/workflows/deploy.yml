@@ -26,6 +26,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+      - name: show npm log
+        if: failure()
+        run: |
+          cat /home/runner/.npm/_logs/*.log
       - name: Install Dependencies
         run: npm ci
       - name: Build
