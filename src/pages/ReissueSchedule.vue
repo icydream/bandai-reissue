@@ -26,13 +26,32 @@ const columns = [
     },
     {
         title: '品名',
-        key: 'title',
-        minWidth: 120
+        minWidth: 120,
+        render(row) {
+            return h('div', [row.original_title, h('br'), `(${row.title})`]);
+        }
     },
     {
         title: '類別',
         key: 'category',
         minWidth: 80
+    },
+    {
+        title: '預計到貨',
+        minWidth: 80,
+        render(row) {
+            return h('div', (() => {
+                let month = [...row.month];
+                
+                for(let i = 0; i < month.length; i++) {
+                    if(i % 2 === 1) {
+                        month = [...month.slice(0, i), h('br'), ...month.slice(i, month.length)];
+                    }
+                }
+
+                return month;
+            })());
+        }
     },
     {
         title: '售價',
@@ -60,6 +79,7 @@ const pagination = ref({
     }
 });
 const handlePageChange = page => {
+    window.scrollTo({ top: 0, left: 0 });
     pagination.value.page = page;
     pageData.value = data.value.filter((_, i) => {
         const startIndex = pagination.value.pageSize * (page - 1);
@@ -81,7 +101,19 @@ watch(
 
         paramStroe.period = period;
         data.value = jsonData.default.map(data => {
-            const result = categoryData.find(c => data.title.indexOf(c.key) !== -1);
+            const result = categoryData.find(c => {
+                if(Array.isArray(c.key)) {
+                    for(const key of c.key) {
+                        if(data.title.indexOf(key) !== -1) {
+                            return true;
+                        }
+                    }
+                } else {
+                    return data.title.indexOf(c.key) !== -1;
+                }
+
+                return false;
+            });
             let category = '-';
 
             if(!!result) {
@@ -99,7 +131,6 @@ watch(
 
             return true;
         });
-
         pagination.value.itemCount = data.value.length;
         handlePageChange(1);
         loading.value = false;

@@ -7,6 +7,7 @@ import { watch } from 'vue';
 
 const paramStroe = useParamStore();
 const { period } = storeToRefs(paramStroe);
+const cloneCagegory = [...category];
 
 watch(
     () => period.value,
@@ -18,15 +19,17 @@ watch(
         document.title = `${year}年${sm}-${em}月再販發售表`;
     }
 );
+
+cloneCagegory.sort((a, b) => a.display - b.display);
 </script>
 <template>
     <n-space>
         |<router-link :to="{ name: 'schedule', params: { period } }">All</router-link>|
         <template
-            v-for="c in category"
-            :key="c.key"
+            v-for="c in cloneCagegory"
+            :key="c.category"
         >
-            <router-link :to="{ name: 'schedule', params: { period }, query: { category: c.key } }">{{ c.category }}</router-link>|
+            <router-link :to="{ name: 'schedule', params: { period }, query: { category: c.category } }">{{ c.label || c.category }}</router-link>|
         </template>
         <router-link :to="{ name: 'schedule', params: { period }, query: { category: '-' } }">Other</router-link>|
     </n-space>
