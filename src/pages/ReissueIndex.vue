@@ -1,13 +1,26 @@
 <script setup>
 import category from '@/assets/data/category.json';
-import { NSpace } from 'naive-ui';
+import { NSpace, NInput } from 'naive-ui';
 import { useParamStore } from '@/stores/param';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { watch, ref } from 'vue';
+import { useSearchStore } from '@/stores/search';
 
-const paramStroe = useParamStore();
-const { period } = storeToRefs(paramStroe);
+const paramStore = useParamStore();
+const searchStore = useSearchStore();
+const { period } = storeToRefs(paramStore);
 const cloneCagegory = [...category];
+const keyward = ref(null);
+let timer;
+const search = () => {
+    if(!!timer) {
+        window.clearTimeout(timer);
+    }
+
+    timer = window.setTimeout(() => {
+        searchStore.keyward = keyward.value;
+    }, 500);
+};
 
 watch(
     () => period.value,
@@ -32,6 +45,13 @@ cloneCagegory.sort((a, b) => a.display - b.display);
             <router-link :to="{ name: 'schedule', params: { period }, query: { category: c.category } }">{{ c.label || c.category }}</router-link>|
         </template>
         <router-link :to="{ name: 'schedule', params: { period }, query: { category: '-' } }">Other</router-link>|
+        <n-input
+            type="text"
+            placeholder="搜尋標題"
+            size="small"
+            v-model:value="keyward"
+            @input="search"
+        />
     </n-space>
     <router-view />
 </template>

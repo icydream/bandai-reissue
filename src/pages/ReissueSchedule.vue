@@ -3,10 +3,14 @@ import { ref, h, watch } from 'vue';
 import { NDataTable, NSpace, NImage } from 'naive-ui';
 import { useRoute } from 'vue-router';
 import { useParamStore } from '@/stores/param';
+import { useSearchStore } from '@/stores/search';
 import categoryData from '@/assets/data/category.json';
+import { storeToRefs } from 'pinia';
 
 const route = useRoute();
-const paramStroe = useParamStore();
+const paramStore = useParamStore();
+const searchStore = useSearchStore();
+const { keyward } = storeToRefs(searchStore);
 const loading = ref(false);
 const data = ref([]);
 const pageData = ref([]);
@@ -92,15 +96,16 @@ const handlePageChange = page => {
 watch(
     [
         () => route.params.period,
-        () => route.query.category
+        () => route.query.category,
+        () => keyward.value
     ],
-    async ([period, category]) => {
+    async ([period, category, keyward]) => {
         loading.value = true;
 
-        const jsonData = await import(`@/assets/data/${period}.json`);
+        const { default: jsonData } = await import(`@/assets/data/${period}.json`);
 
-        paramStroe.period = period;
-        data.value = jsonData.default.map(data => {
+        paramStore.period = period;
+        data.value = jsonData.map(data => {
             const result = categoryData.find(c => {
                 if(Array.isArray(c.key)) {
                     for(const key of c.key) {
@@ -127,6 +132,15 @@ watch(
         .filter(data => {
             if(!!category) {
                 return data.category === category;
+            }
+
+            return true;
+        })
+        .filter(data => {
+            if(!!keyward) {
+                const upperCase = keyward.toUpperCase();
+                return data.original_title.includes(upperCase) ||
+                    data.title.includes(upperCase);
             }
 
             return true;
