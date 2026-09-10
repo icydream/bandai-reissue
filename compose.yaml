@@ -1,0 +1,11 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      VITE_CONTEXT_PATH: ${VITE_CONTEXT_PATH}
+    container_name: bandai-reissue
+    ports:
+      - ${PORT}:80
+    restart: unless-stopped
